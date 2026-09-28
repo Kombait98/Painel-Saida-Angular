@@ -1,59 +1,62 @@
-# PainelSaida
+# Painel de Saída - Escola
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.0.
+Este é um sistema voltado para otimizar o fluxo de liberação e saída de alunos em escolas, substituindo a comunicação por interfone entre a portaria e as salas de aula por um painel digital em tempo real, desenvolvido em **Angular**.
 
-## Development server
+## 🎯 O Que o Sistema Faz
 
-To start a local development server, run:
+No horário de saída, o processo costuma ser caótico com muitos pais na portaria e professores tentando entender qual aluno deve descer. Esta aplicação resolve isso com dois painéis interativos:
 
-```bash
-ng serve
-```
+1. **Painel da Portaria (Porteiro):**
+   - Seleciona a turma do aluno através do celular ou tablet.
+   - Solicita a descida do aluno com um clique ("Chamar Aluno").
+   - Pode chamar o aluno novamente caso a descida atrase.
+   - Quando a criança chega, valida a entrega para o responsável ("Entregue ao Pai").
+   
+2. **Painel da Sala de Aula (Professor):**
+   - Visualiza a sua turma específica.
+   - Recebe notificações visuais instantâneas quando a portaria chama um aluno ("Portaria Chamando").
+   - Mantém o porteiro atualizado alterando o status do aluno para "Arrumando" ou notificando quando ele "Desceu".
+   - Cada alteração possui um contador de tempo para evitar chamadas duplicadas ou alunos "esquecidos".
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+### ⚡ Destaques Técnicos
+- **Mobile-first:** Layout e paleta de cores pensados para uso facilitado no celular sob a luz do dia (botões grandes, design espaçado).
+- **Angular Signals:** Reatividade local moderna para as mudanças de estado.
+- **BroadcastChannel API:** As mudanças de status sincronizam automaticamente entre as abas do navegador, permitindo um "teste em tempo real" sem necessidade de backend ou WebSocket configurado na máquina.
+- **Time Ago:** Uso de Pipes para exibir o tempo desde a última ação (ex: "Atualizado há 15 seg").
 
-## Code scaffolding
+---
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## 🚀 Como Executar o Projeto Localmente
 
-```bash
-ng generate component component-name
-```
+Este projeto foi construído utilizando o [Angular CLI](https://github.com/angular/angular-cli).
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+### Pré-requisitos
+- Node.js instalado na máquina.
+- Angular CLI instalado (`npm install -g @angular/cli`).
 
-```bash
-ng generate --help
-```
+### Passos
 
-## Building
+1. Acesse a pasta raiz do projeto no seu terminal:
+   ```bash
+   cd painel-saida
+   ```
 
-To build the project run:
+2. Instale as dependências:
+   ```bash
+   npm install
+   ```
 
-```bash
-ng build
-```
+3. Inicie o servidor de desenvolvimento:
+   ```bash
+   npm start
+   ```
+   *(ou rode `ng serve`)*
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+4. O aplicativo ficará disponível no seu navegador acessando `http://localhost:4200/`.
 
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+### Como Testar a Mágica Acontecendo (Sincronização)
+Para simular a interação real entre a portaria e o professor:
+1. Abra `http://localhost:4200` em **duas abas ou janelas diferentes** e coloque-as lado a lado.
+2. Na aba 1, entre como **Porteiro**. Na aba 2, entre como **Professor**.
+3. Selecione a mesma turma em ambas as abas (Ex: "Turma E").
+4. Na aba da Portaria, chame um aluno. Imediatamente a aba do Professor será atualizada. Responda pelo professor e veja o status na portaria mudar automaticamente!

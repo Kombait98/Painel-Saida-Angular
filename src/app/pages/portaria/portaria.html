@@ -1,0 +1,63 @@
+<div>
+  <h3 style="color: #58247F; text-align: center;">Portaria</h3>
+  <p style="text-align: center; color: #666; font-size: 14px; margin-bottom: 20px;">Selecione a turma para solicitar o aluno</p>
+
+  <!-- Horizontal Scroll for Classes -->
+  <div style="display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px;">
+    @for (turma of classes(); track turma.id) {
+      <button 
+        (click)="selectClass(turma.id)"
+        [style.background-color]="selectedClassId() === turma.id ? '#58247F' : '#e0e0e0'"
+        [style.color]="selectedClassId() === turma.id ? '#FFFFFF' : '#333'"
+        style="padding: 12px 20px; border: none; border-radius: 20px; font-weight: bold; cursor: pointer; white-space: nowrap;">
+        {{ turma.name }}
+      </button>
+    }
+  </div>
+
+  @if (selectedClassId()) {
+    <div style="background: #FFFFFF; border-radius: 12px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+      <h4 style="color: #58247F; margin-top: 0; margin-bottom: 15px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">Alunos</h4>
+      
+      @if (students().length === 0) {
+        <p style="text-align: center; color: #999; font-style: italic;">Todos os alunos entregues!</p>
+      }
+
+      <div style="display: flex; flex-direction: column; gap: 15px;">
+        @for (student of students(); track student.id) {
+          <div style="display: flex; flex-direction: column; background: #fdfdfd; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
+            
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+              <div>
+                <strong style="font-size: 18px; color: #333; display: block;">{{ student.name }}</strong>
+                <div style="font-size: 12px; color: #888; margin-top: 4px;">Atualizado {{ student.lastUpdatedAt | timeAgo }}</div>
+              </div>
+              <span style="font-size: 16px; font-weight: bold; padding: 6px 12px; border-radius: 16px; background: #f0f0f0;"
+                [style.color]="student.status === 'NA_SALA' ? '#666' : (student.status === 'CHAMADO' ? '#E32427' : (student.status === 'SE_ARRUMANDO' ? '#F46E22' : '#58247F'))">
+                @switch (student.status) {
+                  @case ('NA_SALA') { Na Sala }
+                  @case ('CHAMADO') { Chamado }
+                  @case ('SE_ARRUMANDO') { Arrumando }
+                  @case ('A_CAMINHO') { A Caminho }
+                }
+              </span>
+            </div>
+            
+            <div style="display: flex; gap: 10px; width: 100%;">
+              @if (student.status === 'NA_SALA' || student.status === 'SE_ARRUMANDO') {
+                <button (click)="callStudent(student.id)" style="flex: 1; padding: 12px; font-size: 14px; font-weight: bold; background: #E32427; color: #FFFFFF; border: none; border-radius: 6px; cursor: pointer;">
+                  {{ student.status === 'SE_ARRUMANDO' ? 'Chamar Novamente' : 'Chamar Aluno' }}
+                </button>
+              }
+              @if (student.status === 'A_CAMINHO') {
+                <button (click)="markAsDelivered(student.id)" style="flex: 1; padding: 12px; font-size: 14px; font-weight: bold; background: #58247F; color: #FFFFFF; border: none; border-radius: 6px; cursor: pointer;">
+                  Entregue ao Pai
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
