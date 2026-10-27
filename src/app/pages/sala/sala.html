@@ -9,7 +9,7 @@
         [style.background-color]="selectedClassId() === turma.id ? '#58247F' : '#e0e0e0'"
         [style.color]="selectedClassId() === turma.id ? '#FFFFFF' : '#333'"
         style="padding: 12px 20px; border: none; border-radius: 20px; font-weight: bold; cursor: pointer; white-space: nowrap;">
-        {{ turma.name }}
+        {{ turma.name }} {{ turma.sala ? '(' + turma.sala + ')' : '' }}
       </button>
     }
   </div>
@@ -25,6 +25,12 @@
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
               <div>
                 <strong style="font-size: 18px; color: #333; display: block;">{{ student.name }}</strong>
+                <div style="font-size: 12px; color: #666; margin-top: 2px;">
+                  Matrícula: {{ student.matricula }}
+                  @if (student.nomeResponsavel) {
+                    • Resp: <strong>{{ student.nomeResponsavel }}</strong>
+                  }
+                </div>
                 <div style="font-size: 12px; color: #888; margin-top: 4px;">Atualizado {{ student.lastUpdatedAt | timeAgo }}</div>
               </div>
               <span style="font-size: 16px; font-weight: bold; padding: 6px 12px; border-radius: 16px; background: #f0f0f0;"

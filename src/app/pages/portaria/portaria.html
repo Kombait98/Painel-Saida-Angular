@@ -1,8 +1,15 @@
 <div>
-  <h3 style="color: #58247F; text-align: center;">Portaria</h3>
-  <p style="text-align: center; color: #666; font-size: 14px; margin-bottom: 20px;">Selecione a turma para solicitar o aluno</p>
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+    <h3 style="color: #58247F; margin: 0;">Portaria</h3>
+    <button
+      (click)="resetAll()"
+      style="background: #f0f0f0; color: #58247F; border: 1px solid #d0c0e0; border-radius: 6px; padding: 6px 10px; font-size: 12px; font-weight: bold; cursor: pointer;">
+      Reiniciar Dia
+    </button>
+  </div>
+  <p style="color: #666; font-size: 14px; margin-top: 0; margin-bottom: 20px;">Selecione a turma para solicitar o aluno</p>
 
-  <!-- Horizontal Scroll for Classes -->
+  <!-- Seleção horizontal de Turmas -->
   <div style="display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px;">
     @for (turma of classes(); track turma.id) {
       <button 
@@ -10,7 +17,7 @@
         [style.background-color]="selectedClassId() === turma.id ? '#58247F' : '#e0e0e0'"
         [style.color]="selectedClassId() === turma.id ? '#FFFFFF' : '#333'"
         style="padding: 12px 20px; border: none; border-radius: 20px; font-weight: bold; cursor: pointer; white-space: nowrap;">
-        {{ turma.name }}
+        {{ turma.name }} {{ turma.sala ? '(' + turma.sala + ')' : '' }}
       </button>
     }
   </div>
@@ -30,6 +37,17 @@
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
               <div>
                 <strong style="font-size: 18px; color: #333; display: block;">{{ student.name }}</strong>
+                <div style="font-size: 12px; color: #666; margin-top: 2px;">
+                  Matrícula: {{ student.matricula }}
+                  @if (student.podeSairSozinho) {
+                    • <span style="color: #2e7d32; font-weight: bold;">Pode sair sozinho</span>
+                  }
+                </div>
+                @if (student.observacaoPortaria) {
+                  <div style="font-size: 12px; color: #E32427; font-weight: bold; margin-top: 3px;">
+                    ⚠️ {{ student.observacaoPortaria }}
+                  </div>
+                }
                 <div style="font-size: 12px; color: #888; margin-top: 4px;">Atualizado {{ student.lastUpdatedAt | timeAgo }}</div>
               </div>
               <span style="font-size: 16px; font-weight: bold; padding: 6px 12px; border-radius: 16px; background: #f0f0f0;"
@@ -42,21 +60,65 @@
                 }
               </span>
             </div>
+
+            <!-- Seleção de qual Responsável veio buscar o aluno -->
+            @if (student.responsaveis && student.responsaveis.length > 0) {
+              <div style="margin-bottom: 10px; background: #f9f6fc; padding: 8px 10px; border-radius: 6px; border: 1px solid #ece3f4;">
+                <label style="display: block; font-size: 11px; font-weight: bold; color: #58247F; margin-bottom: 4px;">
+                  👤 Responsável na Portaria:
+                </label>
+                <select
+                  [ngModel]="getResponsavelSelecionado(student)"
+                  (ngModelChange)="setResponsavelSelecionado(student.id, $event)"
+                  style="width: 100%; padding: 8px; font-size: 13px; border: 1px solid #d5c5e5; border-radius: 6px; background: #fff;">
+                  @for (r of student.responsaveis; track r.id) {
+                    <option [ngValue]="r.responsavelPessoaId" [disabled]="!r.podeRetirar">
+                      {{ r.nomeResponsavel }} ({{ r.tipoVinculoNome }}) {{ !r.podeRetirar ? '- BLOQUEADO' : '' }}
+                    </option>
+                  }
+                </select>
+              </div>
+            }
             
             <div style="display: flex; gap: 10px; width: 100%;">
               @if (student.status === 'NA_SALA' || student.status === 'SE_ARRUMANDO') {
-                <button (click)="callStudent(student.id)" style="flex: 1; padding: 12px; font-size: 14px; font-weight: bold; background: #E32427; color: #FFFFFF; border: none; border-radius: 6px; cursor: pointer;">
+                <button (click)="callStudent(student)" style="flex: 1; padding: 12px; font-size: 14px; font-weight: bold; background: #E32427; color: #FFFFFF; border: none; border-radius: 6px; cursor: pointer;">
                   {{ student.status === 'SE_ARRUMANDO' ? 'Chamar Novamente' : 'Chamar Aluno' }}
                 </button>
               }
               @if (student.status === 'A_CAMINHO') {
-                <button (click)="markAsDelivered(student.id)" style="flex: 1; padding: 12px; font-size: 14px; font-weight: bold; background: #58247F; color: #FFFFFF; border: none; border-radius: 6px; cursor: pointer;">
+                <button (click)="markAsDelivered(student)" style="flex: 1; padding: 12px; font-size: 14px; font-weight: bold; background: #58247F; color: #FFFFFF; border: none; border-radius: 6px; cursor: pointer;">
                   Entregue ao Pai
+                </button>
+              }
+              @if (student.solicitacaoSaidaId) {
+                <button (click)="openHistorico(student)" style="padding: 12px 14px; font-size: 13px; font-weight: bold; background: #f3edf7; color: #58247F; border: none; border-radius: 6px; cursor: pointer;">
+                  Histórico
                 </button>
               }
             </div>
           </div>
         }
+      </div>
+    </div>
+  }
+
+  @if (historicoModalStudent(); as modalStudent) {
+    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 1000;">
+      <div style="background: #FFFFFF; border-radius: 12px; padding: 20px; width: 100%; max-width: 450px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h4 style="margin: 0; color: #58247F;">Histórico de Saída — {{ modalStudent.name }}</h4>
+          <button (click)="closeHistorico()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #666;">✕</button>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto;">
+          @for (item of historicoItems(); track item.id) {
+            <div style="padding: 10px; background: #f9f6fc; border-left: 4px solid #58247F; border-radius: 6px; font-size: 13px;">
+              <strong>{{ item.status?.nome }}</strong>
+              <div style="color: #555; margin-top: 2px;">{{ item.observacao }}</div>
+              <div style="color: #888; font-size: 11px; margin-top: 4px;">{{ item.dataHora | date:'dd/MM/yyyy HH:mm:ss' }}</div>
+            </div>
+          }
+        </div>
       </div>
     </div>
   }

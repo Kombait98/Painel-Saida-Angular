@@ -1,9 +1,28 @@
 <header style="background: #58247F; padding: 15px; color: #FFFFFF; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-  <h2 style="margin: 0; font-size: 20px;">Painel Escolar</h2>
-  <nav style="margin-top: 15px; display: flex; gap: 15px; width: 100%; justify-content: center;">
-    <a routerLink="/" style="color: #FFFFFF; text-decoration: none; font-weight: bold; font-size: 14px;">Início</a>
-    <a routerLink="/portaria" style="color: #FFFFFF; text-decoration: none; font-weight: bold; font-size: 14px;">Portaria</a>
-    <a routerLink="/sala" style="color: #FFFFFF; text-decoration: none; font-weight: bold; font-size: 14px;">Sala</a>
+  <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 600px;">
+    <h2 style="margin: 0; font-size: 20px;">Painel Escolar</h2>
+    @if (currentUser(); as user) {
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 12px; background: rgba(255,255,255,0.18); padding: 4px 10px; border-radius: 12px;">
+          {{ user.nomeCompleto }} ({{ user.tipoPessoaNome }})
+        </span>
+        <button (click)="logout()" style="background: #DF184F; color: #FFFFFF; border: none; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;">
+          Sair
+        </button>
+      </div>
+    } @else {
+      <a routerLink="/login" style="background: #F46E22; color: #FFFFFF; text-decoration: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold;">
+        Login
+      </a>
+    }
+  </div>
+  <nav style="margin-top: 12px; display: flex; flex-wrap: wrap; gap: 14px; width: 100%; justify-content: center;">
+    <a routerLink="/login" style="color: #FFFFFF; text-decoration: none; font-weight: bold; font-size: 13px;">Login</a>
+    <a routerLink="/portaria" style="color: #FFFFFF; text-decoration: none; font-weight: bold; font-size: 13px;">Portaria</a>
+    <a routerLink="/sala" style="color: #FFFFFF; text-decoration: none; font-weight: bold; font-size: 13px;">Sala</a>
+    <a routerLink="/gestao" style="color: #FFFFFF; text-decoration: none; font-weight: bold; font-size: 13px;">Alunos & Turmas</a>
+    <a routerLink="/cadastro-usuario" style="color: #FFFFFF; text-decoration: none; font-weight: bold; font-size: 13px;">Novo Usuário</a>
+    <a routerLink="/reset-senha" style="color: #FFFFFF; text-decoration: none; font-weight: bold; font-size: 13px;">Reset Senha</a>
   </nav>
 </header>
 

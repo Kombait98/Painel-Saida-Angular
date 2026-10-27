@@ -1,0 +1,79 @@
+<div style="margin-top: 20px; padding: 24px; background: #FFFFFF; border-radius: 14px; box-shadow: 0 4px 12px rgba(88, 36, 127, 0.1);">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+    <div>
+      <h2 style="color: #58247F; margin: 0 0 4px 0; font-size: 20px;">Redefinir Senha</h2>
+      <p style="color: #666; font-size: 13px; margin: 0;">Informe seu usuário para atualizar a senha de acesso</p>
+    </div>
+    <a routerLink="/login" style="color: #DF184F; font-size: 13px; font-weight: bold; text-decoration: none;">
+      ← Voltar ao Login
+    </a>
+  </div>
+
+  @if (errorMessage()) {
+    <div style="background: #fde8e8; border-left: 4px solid #E32427; color: #E32427; padding: 12px; border-radius: 6px; font-size: 14px; font-weight: bold; margin-bottom: 16px;">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (successMessage()) {
+    <div style="background: #edf7ed; border-left: 4px solid #2e7d32; color: #1b5e20; padding: 12px; border-radius: 6px; font-size: 14px; font-weight: bold; margin-bottom: 16px;">
+      {{ successMessage() }}
+      <div style="margin-top: 8px;">
+        <a routerLink="/login" style="color: #58247F; font-weight: bold; text-decoration: underline;">Ir para a tela de Login</a>
+      </div>
+    </div>
+  }
+
+  <form (ngSubmit)="onSubmit()" style="display: flex; flex-direction: column; gap: 14px;">
+    <div>
+      <label style="display: block; font-size: 13px; font-weight: bold; color: #58247F; margin-bottom: 6px;">Usuário (UserId) *</label>
+      <input
+        type="text"
+        name="userId"
+        [(ngModel)]="userId"
+        placeholder="Ex: porteiro ou prof.a"
+        style="width: 100%; padding: 14px; font-size: 16px; border: 1.5px solid #ddd; border-radius: 8px; box-sizing: border-box;"
+      />
+    </div>
+
+    <div>
+      <label style="display: block; font-size: 13px; font-weight: bold; color: #58247F; margin-bottom: 6px;">CPF (Opcional para validação)</label>
+      <input
+        type="text"
+        name="cpf"
+        [(ngModel)]="cpf"
+        placeholder="000.000.000-00"
+        style="width: 100%; padding: 14px; font-size: 16px; border: 1.5px solid #ddd; border-radius: 8px; box-sizing: border-box;"
+      />
+    </div>
+
+    <div>
+      <label style="display: block; font-size: 13px; font-weight: bold; color: #58247F; margin-bottom: 6px;">Nova Senha *</label>
+      <input
+        type="password"
+        name="novaSenha"
+        [(ngModel)]="novaSenha"
+        placeholder="Digite a nova senha"
+        style="width: 100%; padding: 14px; font-size: 16px; border: 1.5px solid #ddd; border-radius: 8px; box-sizing: border-box;"
+      />
+    </div>
+
+    <div>
+      <label style="display: block; font-size: 13px; font-weight: bold; color: #58247F; margin-bottom: 6px;">Confirmar Nova Senha *</label>
+      <input
+        type="password"
+        name="confirmarNovaSenha"
+        [(ngModel)]="confirmarNovaSenha"
+        placeholder="Repita a nova senha"
+        style="width: 100%; padding: 14px; font-size: 16px; border: 1.5px solid #ddd; border-radius: 8px; box-sizing: border-box;"
+      />
+    </div>
+
+    <button
+      type="submit"
+      [disabled]="loading()"
+      style="padding: 16px; font-size: 16px; font-weight: bold; cursor: pointer; background: #F46E22; color: #FFFFFF; border: none; border-radius: 8px; margin-top: 6px; box-shadow: 0 3px 8px rgba(244, 110, 34, 0.25);">
+      {{ loading() ? 'Redefinindo...' : 'Salvar Nova Senha' }}
+    </button>
+  </form>
+</div>

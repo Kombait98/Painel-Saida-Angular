@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
+import { AuthService } from './services/auth';
 
 @Component({
   selector: 'app-root',
@@ -10,4 +11,10 @@ import { RouterLink, RouterOutlet } from '@angular/router';
 })
 export class App {
   title = 'painel-saida';
+  authService = inject(AuthService);
+  currentUser = this.authService.currentUser;
+
+  logout() {
+    this.authService.logout();
+  }
 }

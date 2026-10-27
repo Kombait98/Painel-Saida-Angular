@@ -1,0 +1,613 @@
+<div>
+  <!-- Alerta Flutuante (Toast Fixo no Topo) para Feedback imediato de Cadastro / Edição / Erro -->
+  @if (errorMessage()) {
+    <div style="position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 2000; width: 92%; max-width: 520px; background: #E32427; color: #FFFFFF; padding: 14px 18px; border-radius: 10px; box-shadow: 0 6px 20px rgba(227, 36, 39, 0.35); display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+      <div style="font-size: 14px; font-weight: bold;">
+        ❌ {{ errorMessage() }}
+      </div>
+      <button (click)="fecharAvisos()" style="background: rgba(255,255,255,0.2); border: none; color: #fff; border-radius: 50%; width: 26px; height: 26px; cursor: pointer; font-weight: bold;">✕</button>
+    </div>
+  }
+
+  @if (successMessage()) {
+    <div style="position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 2000; width: 92%; max-width: 520px; background: #2e7d32; color: #FFFFFF; padding: 14px 18px; border-radius: 10px; box-shadow: 0 6px 20px rgba(46, 125, 50, 0.35); display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+      <div style="font-size: 14px; font-weight: bold;">
+        ✅ {{ successMessage() }}
+      </div>
+      <button (click)="fecharAvisos()" style="background: rgba(255,255,255,0.2); border: none; color: #fff; border-radius: 50%; width: 26px; height: 26px; cursor: pointer; font-weight: bold;">✕</button>
+    </div>
+  }
+
+  <h3 style="color: #58247F; text-align: center; margin-bottom: 6px;">Gestão de Alunos, Turmas e Responsáveis</h3>
+  <p style="text-align: center; color: #666; font-size: 13px; margin-top: 0; margin-bottom: 18px;">
+    Cadastre e edite turmas, alunos e gerencie múltiplos responsáveis autorizados
+  </p>
+
+  <!-- Abas de alternância (Alunos / Turmas) -->
+  <div style="display: flex; gap: 10px; margin-bottom: 18px;">
+    <button
+      type="button"
+      (click)="selecionarAba('ALUNOS')"
+      [style.background-color]="abaAtiva() === 'ALUNOS' ? '#58247F' : '#e8e0f0'"
+      [style.color]="abaAtiva() === 'ALUNOS' ? '#FFFFFF' : '#58247F'"
+      style="flex: 1; padding: 13px; border: none; border-radius: 10px; font-size: 15px; font-weight: bold; cursor: pointer;">
+      🎓 Alunos ({{ alunosLista().length }})
+    </button>
+    <button
+      type="button"
+      (click)="selecionarAba('TURMAS')"
+      [style.background-color]="abaAtiva() === 'TURMAS' ? '#58247F' : '#e8e0f0'"
+      [style.color]="abaAtiva() === 'TURMAS' ? '#FFFFFF' : '#58247F'"
+      style="flex: 1; padding: 13px; border: none; border-radius: 10px; font-size: 15px; font-weight: bold; cursor: pointer;">
+      📚 Turmas ({{ classes().length }})
+    </button>
+  </div>
+
+  <!-- Alerta também visível acima do formulário -->
+  @if (errorMessage()) {
+    <div style="background: #fde8e8; border-left: 4px solid #E32427; color: #E32427; padding: 12px; border-radius: 6px; font-size: 14px; font-weight: bold; margin-bottom: 16px;">
+      ❌ {{ errorMessage() }}
+    </div>
+  }
+
+  @if (successMessage()) {
+    <div style="background: #edf7ed; border-left: 4px solid #2e7d32; color: #1b5e20; padding: 12px; border-radius: 6px; font-size: 14px; font-weight: bold; margin-bottom: 16px;">
+      ✅ {{ successMessage() }}
+    </div>
+  }
+
+  <!-- ====================================================================== -->
+  <!-- ABA: ALUNOS -->
+  <!-- ====================================================================== -->
+  @if (abaAtiva() === 'ALUNOS') {
+    <div style="background: #FFFFFF; border-radius: 14px; padding: 20px; box-shadow: 0 3px 10px rgba(88, 36, 127, 0.08); margin-bottom: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <h4 style="color: #58247F; margin: 0; font-size: 17px;">
+          {{ editandoAlunoId() ? '✏️ Editando Aluno' : '➕ Novo Aluno' }}
+        </h4>
+        @if (editandoAlunoId()) {
+          <button
+            type="button"
+            (click)="cancelarEdicaoAluno()"
+            style="background: #f0f0f0; color: #555; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;">
+            Cancelar Edição
+          </button>
+        }
+      </div>
+
+      <form (ngSubmit)="salvarAluno()" style="display: flex; flex-direction: column; gap: 12px;">
+        <div>
+          <label style="display: block; font-size: 13px; font-weight: bold; color: #58247F; margin-bottom: 4px;">Nome Completo do Aluno *</label>
+          <input
+            type="text"
+            name="alunoNomeCompleto"
+            [(ngModel)]="alunoNomeCompleto"
+            placeholder="Ex: Enzo Gabriel Oliveira"
+            style="width: 100%; padding: 11px; font-size: 14px; border: 1.5px solid #ddd; border-radius: 8px; box-sizing: border-box;"
+          />
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: bold; color: #58247F; margin-bottom: 4px;">Matrícula *</label>
+            <input
+              type="text"
+              name="alunoMatricula"
+              [(ngModel)]="alunoMatricula"
+              placeholder="Ex: MAT2026011"
+              style="width: 100%; padding: 11px; font-size: 14px; border: 1.5px solid #ddd; border-radius: 8px; box-sizing: border-box;"
+            />
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: bold; color: #58247F; margin-bottom: 4px;">Turma *</label>
+            <select
+              name="alunoTurmaId"
+              [(ngModel)]="alunoTurmaId"
+              style="width: 100%; padding: 11px; font-size: 14px; border: 1.5px solid #ddd; border-radius: 8px; background: #fff; box-sizing: border-box;">
+              @for (t of classes(); track t.id) {
+                <option [ngValue]="+t.id">{{ t.name }} {{ t.sala ? '(' + t.sala + ')' : '' }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: bold; color: #58247F; margin-bottom: 4px;">CPF do Aluno</label>
+            <input
+              type="text"
+              name="alunoCpf"
+              [(ngModel)]="alunoCpf"
+              placeholder="000.000.000-00"
+              style="width: 100%; padding: 11px; font-size: 14px; border: 1.5px solid #ddd; border-radius: 8px; box-sizing: border-box;"
+            />
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: bold; color: #58247F; margin-bottom: 4px;">Data de Nascimento</label>
+            <input
+              type="date"
+              name="alunoDataNascimento"
+              [(ngModel)]="alunoDataNascimento"
+              style="width: 100%; padding: 10px; font-size: 14px; border: 1.5px solid #ddd; border-radius: 8px; box-sizing: border-box;"
+            />
+          </div>
+        </div>
+
+        <!-- Dados do Responsável Principal -->
+        <div style="background: #f9f6fc; padding: 12px; border-radius: 8px; border: 1px solid #ece3f4;">
+          <div style="font-size: 12px; font-weight: bold; color: #58247F; margin-bottom: 8px; text-transform: uppercase;">
+            Responsável Principal (Para Retirada na Portaria)
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div>
+              <label style="display: block; font-size: 12px; font-weight: bold; color: #444; margin-bottom: 4px;">Nome do Responsável</label>
+              <input
+                type="text"
+                name="alunoNomeResponsavel"
+                [(ngModel)]="alunoNomeResponsavel"
+                placeholder="Ex: Fernanda Oliveira (Mãe)"
+                style="width: 100%; padding: 10px; font-size: 14px; border: 1.5px solid #ddd; border-radius: 6px; box-sizing: border-box;"
+              />
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div>
+                <label style="display: block; font-size: 12px; font-weight: bold; color: #444; margin-bottom: 4px;">Vínculo</label>
+                <select
+                  name="alunoTipoVinculoId"
+                  [(ngModel)]="alunoTipoVinculoId"
+                  style="width: 100%; padding: 10px; font-size: 14px; border: 1.5px solid #ddd; border-radius: 6px; background: #fff; box-sizing: border-box;">
+                  @for (v of tiposVinculo(); track v.id) {
+                    <option [ngValue]="v.id">{{ v.nome }}</option>
+                  }
+                </select>
+              </div>
+
+              <div>
+                <label style="display: block; font-size: 12px; font-weight: bold; color: #444; margin-bottom: 4px;">Telefone do Responsável</label>
+                <input
+                  type="text"
+                  name="alunoTelefoneResponsavel"
+                  [(ngModel)]="alunoTelefoneResponsavel"
+                  placeholder="(11) 99999-0000"
+                  style="width: 100%; padding: 10px; font-size: 14px; border: 1.5px solid #ddd; border-radius: 6px; box-sizing: border-box;"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 13px; font-weight: bold; color: #58247F; margin-bottom: 4px;">Observação para a Portaria</label>
+          <input
+            type="text"
+            name="alunoObservacaoPortaria"
+            [(ngModel)]="alunoObservacaoPortaria"
+            placeholder="Ex: Somente a mãe ou avó podem retirar"
+            style="width: 100%; padding: 11px; font-size: 14px; border: 1.5px solid #ddd; border-radius: 8px; box-sizing: border-box;"
+          />
+        </div>
+
+        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: #333; cursor: pointer;">
+          <input
+            type="checkbox"
+            name="alunoPodeSairSozinho"
+            [(ngModel)]="alunoPodeSairSozinho"
+            style="width: 18px; height: 18px; accent-color: #58247F;"
+          />
+          Autorizado a sair desacompanhado (Pode sair sozinho)
+        </label>
+
+        <button
+          type="submit"
+          [disabled]="loading()"
+          style="padding: 14px; font-size: 15px; font-weight: bold; cursor: pointer; background: #DF184F; color: #FFFFFF; border: none; border-radius: 8px; margin-top: 4px;">
+          {{ loading() ? 'Salvando...' : (editandoAlunoId() ? 'Salvar Alterações do Aluno' : 'Cadastrar Aluno') }}
+        </button>
+      </form>
+    </div>
+
+    <!-- Lista e Filtro de Alunos -->
+    <div style="background: #FFFFFF; border-radius: 14px; padding: 18px; box-shadow: 0 3px 10px rgba(88, 36, 127, 0.08);">
+      <h4 style="color: #58247F; margin: 0 0 12px 0;">Alunos Cadastrados ({{ alunosFiltrados().length }})</h4>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px;">
+        <input
+          type="text"
+          [ngModel]="filtroBusca()"
+          (ngModelChange)="filtroBusca.set($event)"
+          placeholder="Buscar por nome ou matrícula..."
+          style="padding: 10px; font-size: 13px; border: 1.5px solid #ddd; border-radius: 8px;"
+        />
+        <select
+          [ngModel]="filtroTurmaId()"
+          (ngModelChange)="filtroTurmaId.set($event)"
+          style="padding: 10px; font-size: 13px; border: 1.5px solid #ddd; border-radius: 8px; background: #fff;">
+          <option value="">Todas as Turmas</option>
+          @for (t of classes(); track t.id) {
+            <option [value]="t.id">{{ t.name }}</option>
+          }
+        </select>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        @for (aluno of alunosFiltrados(); track aluno.alunoId) {
+          <div style="display: flex; flex-direction: column; gap: 10px; padding: 12px; background: #fdfdfd; border: 1px solid #eee; border-left: 5px solid #58247F; border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <strong style="font-size: 16px; color: #333; display: block;">{{ aluno.nomeCompleto }}</strong>
+                <div style="font-size: 12px; color: #666; margin-top: 2px;">
+                  <span style="background: #f0ebf5; color: #58247F; font-weight: bold; padding: 2px 6px; border-radius: 6px;">{{ aluno.nomeTurma }}</span>
+                  • Matrícula: <strong>{{ aluno.matricula }}</strong>
+                </div>
+
+                @if (aluno.responsaveis && aluno.responsaveis.length > 0) {
+                  <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px;">
+                    @for (r of aluno.responsaveis; track r.id) {
+                      <span
+                        style="font-size: 11px; padding: 3px 8px; border-radius: 10px; font-weight: bold;"
+                        [style.background]="r.podeRetirar ? '#e8f5e9' : '#fde8e8'"
+                        [style.color]="r.podeRetirar ? '#2e7d32' : '#E32427'">
+                        👤 {{ r.nomeResponsavel }} ({{ r.tipoVinculoNome }})
+                        {{ r.responsavelPrincipal ? '★' : '' }}
+                        {{ !r.podeRetirar ? '[Bloqueado]' : '' }}
+                      </span>
+                    }
+                  </div>
+                } @else {
+                  <div style="font-size: 11px; color: #999; margin-top: 4px; font-style: italic;">
+                    Nenhum responsável vinculado
+                  </div>
+                }
+
+                @if (aluno.observacaoPortaria) {
+                  <div style="font-size: 11px; color: #E32427; margin-top: 4px;">
+                    ⚠️ Obs: {{ aluno.observacaoPortaria }}
+                  </div>
+                }
+              </div>
+
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end;">
+                <button
+                  type="button"
+                  (click)="abrirModalResponsaveis(aluno)"
+                  style="background: #58247F; color: #FFFFFF; border: none; padding: 8px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;">
+                  👨‍👩‍👧‍👦 Responsáveis ({{ aluno.responsaveis.length }})
+                </button>
+                <button
+                  type="button"
+                  (click)="iniciarEdicaoAluno(aluno)"
+                  style="background: #F46E22; color: #FFFFFF; border: none; padding: 8px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;">
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  (click)="removerAluno(aluno)"
+                  style="background: #fde8e8; color: #E32427; border: 1px solid #f5c2c2; padding: 8px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;">
+                  Excluir
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ====================================================================== -->
+  <!-- ABA: TURMAS -->
+  <!-- ====================================================================== -->
+  @if (abaAtiva() === 'TURMAS') {
+    <div style="background: #FFFFFF; border-radius: 14px; padding: 20px; box-shadow: 0 3px 10px rgba(88, 36, 127, 0.08); margin-bottom: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <h4 style="color: #58247F; margin: 0; font-size: 17px;">
+          {{ editandoTurmaId() ? '✏️ Editando Turma' : '➕ Nova Turma' }}
+        </h4>
+        @if (editandoTurmaId()) {
+          <button
+            type="button"
+            (click)="cancelarEdicaoTurma()"
+            style="background: #f0f0f0; color: #555; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;">
+            Cancelar Edição
+          </button>
+        }
+      </div>
+
+      <form (ngSubmit)="salvarTurma()" style="display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: bold; color: #58247F; margin-bottom: 4px;">Nome da Turma *</label>
+            <input
+              type="text"
+              name="turmaNome"
+              [(ngModel)]="turmaNome"
+              placeholder="Ex: Turma F - 5º Ano"
+              style="width: 100%; padding: 11px; font-size: 14px; border: 1.5px solid #ddd; border-radius: 8px; box-sizing: border-box;"
+            />
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: bold; color: #58247F; margin-bottom: 4px;">Sala</label>
+            <input
+              type="text"
+              name="turmaSala"
+              [(ngModel)]="turmaSala"
+              placeholder="Ex: Sala 106"
+              style="width: 100%; padding: 11px; font-size: 14px; border: 1.5px solid #ddd; border-radius: 8px; box-sizing: border-box;"
+            />
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: bold; color: #58247F; margin-bottom: 4px;">Turno *</label>
+            <select
+              name="turmaTurnoId"
+              [(ngModel)]="turmaTurnoId"
+              style="width: 100%; padding: 11px; font-size: 14px; border: 1.5px solid #ddd; border-radius: 8px; background: #fff; box-sizing: border-box;">
+              @for (tn of turnos(); track tn.id) {
+                <option [ngValue]="tn.id">{{ tn.nome }}</option>
+              }
+            </select>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: bold; color: #58247F; margin-bottom: 4px;">Ano Letivo *</label>
+            <input
+              type="number"
+              name="turmaAnoLetivo"
+              [(ngModel)]="turmaAnoLetivo"
+              style="width: 100%; padding: 11px; font-size: 14px; border: 1.5px solid #ddd; border-radius: 8px; box-sizing: border-box;"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 13px; font-weight: bold; color: #58247F; margin-bottom: 4px;">Professor Responsável</label>
+          <select
+            name="turmaProfessorPessoaId"
+            [(ngModel)]="turmaProfessorPessoaId"
+            style="width: 100%; padding: 11px; font-size: 14px; border: 1.5px solid #ddd; border-radius: 8px; background: #fff; box-sizing: border-box;">
+            <option [ngValue]="null">-- Sem professor definido --</option>
+            @for (prof of professores(); track prof.id) {
+              <option [ngValue]="prof.id">{{ prof.nomeCompleto }} {{ prof.userId ? '(' + prof.userId + ')' : '' }}</option>
+            }
+          </select>
+        </div>
+
+        <button
+          type="submit"
+          [disabled]="loading()"
+          style="padding: 14px; font-size: 15px; font-weight: bold; cursor: pointer; background: #58247F; color: #FFFFFF; border: none; border-radius: 8px; margin-top: 4px;">
+          {{ loading() ? 'Salvando...' : (editandoTurmaId() ? 'Salvar Alterações da Turma' : 'Cadastrar Turma') }}
+        </button>
+      </form>
+    </div>
+
+    <!-- Lista de Turmas -->
+    <div style="background: #FFFFFF; border-radius: 14px; padding: 18px; box-shadow: 0 3px 10px rgba(88, 36, 127, 0.08);">
+      <h4 style="color: #58247F; margin: 0 0 12px 0;">Turmas Ativas ({{ classes().length }})</h4>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        @for (turma of classes(); track turma.id) {
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #fdfdfd; border: 1px solid #eee; border-left: 5px solid #DF184F; border-radius: 8px;">
+            <div>
+              <strong style="font-size: 16px; color: #333;">{{ turma.name }}</strong>
+              <span style="font-size: 12px; color: #666; margin-left: 6px;">
+                {{ turma.sala ? '• ' + turma.sala : '' }}
+                {{ turma.turnoNome ? '• Turno: ' + turma.turnoNome : '' }}
+                {{ turma.anoLetivo ? '• ' + turma.anoLetivo : '' }}
+              </span>
+              <div style="font-size: 12px; color: #555; margin-top: 4px;">
+                👩‍🏫 Professor(a): <strong>{{ turma.professorNome || 'Não definido' }}</strong>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 6px;">
+              <button
+                type="button"
+                (click)="iniciarEdicaoTurma(turma)"
+                style="background: #F46E22; color: #FFFFFF; border: none; padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;">
+                Editar
+              </button>
+              <button
+                type="button"
+                (click)="removerTurma(turma)"
+                style="background: #fde8e8; color: #E32427; border: 1px solid #f5c2c2; padding: 8px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;">
+                Excluir
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ====================================================================== -->
+  <!-- MODAL: VÍNCULO ALUNO <-> RESPONSÁVEIS (Tabela aluno_responsavel) -->
+  <!-- ====================================================================== -->
+  @if (alunoSelecionadoModal(); as modalAluno) {
+    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; padding: 14px; z-index: 1000;">
+      <div style="background: #FFFFFF; border-radius: 14px; padding: 20px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 28px rgba(0,0,0,0.25);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">
+          <div>
+            <h4 style="margin: 0; color: #58247F; font-size: 17px;">Responsáveis de {{ modalAluno.nomeCompleto }}</h4>
+            <span style="font-size: 12px; color: #666;">Matrícula: {{ modalAluno.matricula }} • {{ modalAluno.nomeTurma }}</span>
+          </div>
+          <button (click)="fecharModalResponsaveis()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #666;">✕</button>
+        </div>
+
+        <!-- Lista de Responsáveis já vinculados a este Aluno -->
+        <div style="margin-bottom: 18px;">
+          <div style="font-size: 12px; font-weight: bold; color: #58247F; margin-bottom: 8px; text-transform: uppercase;">
+            Responsáveis Vinculados ({{ modalAluno.responsaveis.length }})
+          </div>
+
+          @if (modalAluno.responsaveis.length === 0) {
+            <p style="font-size: 13px; color: #888; font-style: italic; margin: 6px 0;">Nenhum responsável vinculado a este aluno.</p>
+          }
+
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            @for (r of modalAluno.responsaveis; track r.id) {
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #f9f6fc; border-radius: 8px; border: 1px solid #ece3f4;">
+                <div>
+                  <strong style="font-size: 14px; color: #333;">{{ r.nomeResponsavel }}</strong>
+                  <span style="font-size: 11px; background: #58247F; color: #fff; padding: 2px 6px; border-radius: 8px; margin-left: 6px;">
+                    {{ r.tipoVinculoNome }}
+                  </span>
+                  @if (r.responsavelPrincipal) {
+                    <span style="font-size: 11px; background: #F46E22; color: #fff; padding: 2px 6px; border-radius: 8px; margin-left: 4px;">
+                      Principal
+                    </span>
+                  }
+                  <div style="font-size: 12px; color: #666; margin-top: 3px;">
+                    {{ r.telefoneResponsavel ? '📞 ' + r.telefoneResponsavel : '' }}
+                    {{ r.cpfResponsavel ? ' • CPF: ' + r.cpfResponsavel : '' }}
+                    @if (r.dataValidade) {
+                      • Validade: {{ r.dataValidade | date:'dd/MM/yyyy' }}
+                    }
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 6px; align-items: center;">
+                  <button
+                    type="button"
+                    (click)="togglePodeRetirar(r)"
+                    [style.background]="r.podeRetirar ? '#2e7d32' : '#E32427'"
+                    style="color: #fff; border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">
+                    {{ r.podeRetirar ? '✓ Pode Retirar' : '✕ Bloqueado' }}
+                  </button>
+                  <button
+                    type="button"
+                    (click)="removerVinculo(r)"
+                    style="background: #fde8e8; color: #E32427; border: none; padding: 6px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">
+                    Remover
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Formulário para Adicionar Novo Vínculo de Responsável -->
+        <div style="border-top: 2px solid #f0f0f0; padding-top: 14px;">
+          <div style="font-size: 13px; font-weight: bold; color: #58247F; margin-bottom: 10px;">
+            ➕ Vincular Mais um Responsável (Pai, Mãe, Avó, Tio, Tutor...)
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <button
+              type="button"
+              (click)="modoResponsavel = 'NOVO'"
+              [style.background]="modoResponsavel === 'NOVO' ? '#58247F' : '#eee'"
+              [style.color]="modoResponsavel === 'NOVO' ? '#fff' : '#333'"
+              style="flex: 1; padding: 8px; border: none; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;">
+              Cadastrar Nova Pessoa
+            </button>
+            <button
+              type="button"
+              (click)="modoResponsavel = 'EXISTENTE'"
+              [style.background]="modoResponsavel === 'EXISTENTE' ? '#58247F' : '#eee'"
+              [style.color]="modoResponsavel === 'EXISTENTE' ? '#fff' : '#333'"
+              style="flex: 1; padding: 8px; border: none; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;">
+              Selecionar Responsável Existente
+            </button>
+          </div>
+
+          <form (ngSubmit)="salvarVinculoResponsavel()" style="display: flex; flex-direction: column; gap: 10px;">
+            @if (modoResponsavel === 'EXISTENTE') {
+              <div>
+                <label style="display: block; font-size: 12px; font-weight: bold; color: #58247F; margin-bottom: 4px;">Selecione a Pessoa Responsável *</label>
+                <select
+                  name="vincResponsavelPessoaId"
+                  [(ngModel)]="vincResponsavelPessoaId"
+                  style="width: 100%; padding: 10px; font-size: 14px; border: 1.5px solid #ddd; border-radius: 6px; background: #fff;">
+                  <option [ngValue]="null">-- Escolha um responsável cadastrado --</option>
+                  @for (p of pessoasResponsaveis(); track p.id) {
+                    <option [ngValue]="p.id">{{ p.nomeCompleto }} {{ p.telefone ? '(' + p.telefone + ')' : '' }}</option>
+                  }
+                </select>
+              </div>
+            } @else {
+              <div>
+                <label style="display: block; font-size: 12px; font-weight: bold; color: #58247F; margin-bottom: 4px;">Nome Completo do Responsável *</label>
+                <input
+                  type="text"
+                  name="vincNomeCompleto"
+                  [(ngModel)]="vincNomeCompleto"
+                  placeholder="Ex: Helena Silva (Avó)"
+                  style="width: 100%; padding: 10px; font-size: 14px; border: 1.5px solid #ddd; border-radius: 6px; box-sizing: border-box;"
+                />
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <div>
+                  <label style="display: block; font-size: 12px; font-weight: bold; color: #58247F; margin-bottom: 4px;">CPF</label>
+                  <input
+                    type="text"
+                    name="vincCpf"
+                    [(ngModel)]="vincCpf"
+                    placeholder="000.000.000-00"
+                    style="width: 100%; padding: 10px; font-size: 14px; border: 1.5px solid #ddd; border-radius: 6px; box-sizing: border-box;"
+                  />
+                </div>
+                <div>
+                  <label style="display: block; font-size: 12px; font-weight: bold; color: #58247F; margin-bottom: 4px;">Telefone</label>
+                  <input
+                    type="text"
+                    name="vincTelefone"
+                    [(ngModel)]="vincTelefone"
+                    placeholder="(11) 99999-0000"
+                    style="width: 100%; padding: 10px; font-size: 14px; border: 1.5px solid #ddd; border-radius: 6px; box-sizing: border-box;"
+                  />
+                </div>
+              </div>
+            }
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <div>
+                <label style="display: block; font-size: 12px; font-weight: bold; color: #58247F; margin-bottom: 4px;">Tipo de Vínculo *</label>
+                <select
+                  name="vincTipoVinculoId"
+                  [(ngModel)]="vincTipoVinculoId"
+                  style="width: 100%; padding: 10px; font-size: 14px; border: 1.5px solid #ddd; border-radius: 6px; background: #fff;">
+                  @for (v of tiposVinculo(); track v.id) {
+                    <option [ngValue]="v.id">{{ v.nome }}</option>
+                  }
+                </select>
+              </div>
+              <div>
+                <label style="display: block; font-size: 12px; font-weight: bold; color: #58247F; margin-bottom: 4px;">Validade da Autorização (Opcional)</label>
+                <input
+                  type="date"
+                  name="vincDataValidade"
+                  [(ngModel)]="vincDataValidade"
+                  style="width: 100%; padding: 9px; font-size: 14px; border: 1.5px solid #ddd; border-radius: 6px; box-sizing: border-box;"
+                />
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 16px;">
+              <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer;">
+                <input type="checkbox" name="vincResponsavelPrincipal" [(ngModel)]="vincResponsavelPrincipal" />
+                Responsável Principal
+              </label>
+              <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer;">
+                <input type="checkbox" name="vincPodeRetirar" [(ngModel)]="vincPodeRetirar" />
+                Autorizado a retirar o aluno
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              [disabled]="loading()"
+              style="padding: 12px; font-size: 14px; font-weight: bold; background: #DF184F; color: #fff; border: none; border-radius: 8px; cursor: pointer; margin-top: 4px;">
+              {{ loading() ? 'Vinculando...' : 'Adicionar Vínculo ao Aluno' }}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  }
+</div>

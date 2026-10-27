@@ -1,0 +1,206 @@
+<div style="margin-top: 15px; padding: 22px; background: #FFFFFF; border-radius: 14px; box-shadow: 0 4px 12px rgba(88, 36, 127, 0.1);">
+  <!-- Alerta Flutuante (Toast Fixo no Topo) para Feedback imediato de Cadastro / Edição / Erro -->
+  @if (errorMessage()) {
+    <div style="position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 2000; width: 92%; max-width: 520px; background: #E32427; color: #FFFFFF; padding: 14px 18px; border-radius: 10px; box-shadow: 0 6px 20px rgba(227, 36, 39, 0.35); display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+      <div style="font-size: 14px; font-weight: bold;">
+        ❌ {{ errorMessage() }}
+      </div>
+      <button (click)="fecharAvisos()" style="background: rgba(255,255,255,0.2); border: none; color: #fff; border-radius: 50%; width: 26px; height: 26px; cursor: pointer; font-weight: bold;">✕</button>
+    </div>
+  }
+
+  @if (successMessage()) {
+    <div style="position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 2000; width: 92%; max-width: 520px; background: #2e7d32; color: #FFFFFF; padding: 14px 18px; border-radius: 10px; box-shadow: 0 6px 20px rgba(46, 125, 50, 0.35); display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+      <div style="font-size: 14px; font-weight: bold;">
+        ✅ {{ successMessage() }}
+      </div>
+      <button (click)="fecharAvisos()" style="background: rgba(255,255,255,0.2); border: none; color: #fff; border-radius: 50%; width: 26px; height: 26px; cursor: pointer; font-weight: bold;">✕</button>
+    </div>
+  }
+
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+    <div>
+      <h2 style="color: #58247F; margin: 0 0 4px 0; font-size: 20px;">
+        {{ editandoUsuarioId() ? '✏️ Editando Usuário' : 'Cadastro de Usuário' }}
+      </h2>
+      <p style="color: #666; font-size: 13px; margin: 0;">Cadastre ou edite Porteiros, Professores, Administradores ou Responsáveis</p>
+    </div>
+    @if (editandoUsuarioId()) {
+      <button
+        type="button"
+        (click)="cancelarEdicaoUsuario()"
+        style="background: #f0f0f0; color: #555; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;">
+        Cancelar Edição
+      </button>
+    } @else {
+      <a routerLink="/login" style="color: #DF184F; font-size: 13px; font-weight: bold; text-decoration: none;">
+        ← Voltar ao Login
+      </a>
+    }
+  </div>
+
+  @if (errorMessage()) {
+    <div style="background: #fde8e8; border-left: 4px solid #E32427; color: #E32427; padding: 12px; border-radius: 6px; font-size: 14px; font-weight: bold; margin-bottom: 16px;">
+      ❌ {{ errorMessage() }}
+    </div>
+  }
+
+  @if (successMessage()) {
+    <div style="background: #edf7ed; border-left: 4px solid #2e7d32; color: #1b5e20; padding: 12px; border-radius: 6px; font-size: 14px; font-weight: bold; margin-bottom: 16px;">
+      ✅ {{ successMessage() }}
+    </div>
+  }
+
+  <form (ngSubmit)="onSubmit()" style="display: flex; flex-direction: column; gap: 14px;">
+    <div>
+      <label style="display: block; font-size: 13px; font-weight: bold; color: #58247F; margin-bottom: 5px;">Nome Completo *</label>
+      <input
+        type="text"
+        name="nomeCompleto"
+        [(ngModel)]="nomeCompleto"
+        placeholder="Ex: Maria Aparecida Souza"
+        style="width: 100%; padding: 12px; font-size: 15px; border: 1.5px solid #ddd; border-radius: 8px; box-sizing: border-box;"
+      />
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+      <div>
+        <label style="display: block; font-size: 13px; font-weight: bold; color: #58247F; margin-bottom: 5px;">CPF</label>
+        <input
+          type="text"
+          name="cpf"
+          [(ngModel)]="cpf"
+          placeholder="000.000.000-00"
+          style="width: 100%; padding: 12px; font-size: 15px; border: 1.5px solid #ddd; border-radius: 8px; box-sizing: border-box;"
+        />
+      </div>
+
+      <div>
+        <label style="display: block; font-size: 13px; font-weight: bold; color: #58247F; margin-bottom: 5px;">Telefone</label>
+        <input
+          type="text"
+          name="telefone"
+          [(ngModel)]="telefone"
+          placeholder="(11) 99999-0000"
+          style="width: 100%; padding: 12px; font-size: 15px; border: 1.5px solid #ddd; border-radius: 8px; box-sizing: border-box;"
+        />
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+      <div>
+        <label style="display: block; font-size: 13px; font-weight: bold; color: #58247F; margin-bottom: 5px;">Perfil (TipoPessoa) *</label>
+        <select
+          name="tipoPessoaId"
+          [(ngModel)]="tipoPessoaId"
+          style="width: 100%; padding: 12px; font-size: 15px; border: 1.5px solid #ddd; border-radius: 8px; background: #fff; box-sizing: border-box;">
+          @for (tp of tiposPessoa(); track tp.id) {
+            <option [ngValue]="tp.id">{{ tp.nome }}</option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label style="display: block; font-size: 13px; font-weight: bold; color: #58247F; margin-bottom: 5px;">Data de Nascimento</label>
+        <input
+          type="date"
+          name="dataNascimento"
+          [(ngModel)]="dataNascimento"
+          style="width: 100%; padding: 11px; font-size: 15px; border: 1.5px solid #ddd; border-radius: 8px; box-sizing: border-box;"
+        />
+      </div>
+    </div>
+
+    @if (tipoPessoaId == 3) {
+      <div>
+        <label style="display: block; font-size: 13px; font-weight: bold; color: #58247F; margin-bottom: 5px;">Vincular Professor à Turma (Opcional)</label>
+        <select
+          name="turmaId"
+          [(ngModel)]="turmaId"
+          style="width: 100%; padding: 12px; font-size: 15px; border: 1.5px solid #ddd; border-radius: 8px; background: #fff; box-sizing: border-box;">
+          <option [ngValue]="null">-- Sem turma específica --</option>
+          @for (t of classes(); track t.id) {
+            <option [ngValue]="+t.id">{{ t.name }} {{ t.sala ? '(' + t.sala + ')' : '' }}</option>
+          }
+        </select>
+      </div>
+    }
+
+    <div>
+      <label style="display: block; font-size: 13px; font-weight: bold; color: #58247F; margin-bottom: 5px;">Usuário de Login (UserId) *</label>
+      <input
+        type="text"
+        name="userId"
+        [(ngModel)]="userId"
+        placeholder="Ex: porteiro2 ou prof.maria"
+        style="width: 100%; padding: 12px; font-size: 15px; border: 1.5px solid #ddd; border-radius: 8px; box-sizing: border-box;"
+      />
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+      <div>
+        <label style="display: block; font-size: 13px; font-weight: bold; color: #58247F; margin-bottom: 5px;">
+          {{ editandoUsuarioId() ? 'Nova Senha (Opcional)' : 'Senha *' }}
+        </label>
+        <input
+          type="password"
+          name="senha"
+          [(ngModel)]="senha"
+          [placeholder]="editandoUsuarioId() ? 'Deixe em branco para manter' : 'Digite a senha'"
+          style="width: 100%; padding: 12px; font-size: 15px; border: 1.5px solid #ddd; border-radius: 8px; box-sizing: border-box;"
+        />
+      </div>
+
+      <div>
+        <label style="display: block; font-size: 13px; font-weight: bold; color: #58247F; margin-bottom: 5px;">Confirmar Senha</label>
+        <input
+          type="password"
+          name="confirmarSenha"
+          [(ngModel)]="confirmarSenha"
+          placeholder="Repita a senha"
+          style="width: 100%; padding: 12px; font-size: 15px; border: 1.5px solid #ddd; border-radius: 8px; box-sizing: border-box;"
+        />
+      </div>
+    </div>
+
+    <button
+      type="submit"
+      [disabled]="loading()"
+      style="padding: 15px; font-size: 16px; font-weight: bold; cursor: pointer; background: #DF184F; color: #FFFFFF; border: none; border-radius: 8px; margin-top: 6px; box-shadow: 0 3px 8px rgba(223, 24, 79, 0.25);">
+      {{ loading() ? 'Salvando no Banco...' : (editandoUsuarioId() ? 'Salvar Alterações do Usuário' : 'Cadastrar Usuário') }}
+    </button>
+  </form>
+
+  <!-- Lista de usuários cadastrados no banco -->
+  <div style="margin-top: 28px; padding-top: 18px; border-top: 2px solid #f0f0f0;">
+    <h4 style="color: #58247F; margin: 0 0 12px 0;">Usuários Cadastrados ({{ usuarios().length }})</h4>
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      @for (u of usuarios(); track u.pessoaId) {
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #f9f6fc; border-radius: 8px; border: 1px solid #ece3f4;">
+          <div>
+            <strong style="color: #333; font-size: 14px;">{{ u.nomeCompleto }}</strong>
+            <div style="font-size: 12px; color: #666;">
+              Login: <strong>{{ u.userId }}</strong>
+              @if (u.nomeTurma) {
+                • {{ u.nomeTurma }}
+              }
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span
+              style="font-size: 12px; font-weight: bold; padding: 4px 10px; border-radius: 12px; color: #FFFFFF;"
+              [style.background]="u.tipoPessoaId === 4 ? '#DF184F' : (u.tipoPessoaId === 3 ? '#58247F' : '#F46E22')">
+              {{ u.tipoPessoaNome }}
+            </span>
+            <button
+              type="button"
+              (click)="iniciarEdicaoUsuario(u)"
+              style="background: #F46E22; color: #FFFFFF; border: none; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;">
+              Editar
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
